@@ -66,6 +66,8 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 16,
     lineHeight: 18,
+    textAlignVertical: 'center',
+    height: 18,
     padding: 0,
   },
 });
