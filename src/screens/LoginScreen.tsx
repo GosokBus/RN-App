@@ -1,8 +1,8 @@
 import 'react';
 import {useState} from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
+import Logo from '../assets/logo.svg';
 import Input from '../components/Input';
-
 interface LoginData {
   id: string;
   password: string;
@@ -19,9 +19,9 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{alignItems: 'center', gap: 47}}>
-        <Image source={require('../assets/logo.png')} />
-        <View style={{width: '100%'}}>
+      <View style={styles.contents}>
+        <Logo />
+        <View style={styles.form}>
           <Input
             value={value.id}
             onChangeFn={onChangeId}
@@ -47,12 +47,8 @@ const styles = StyleSheet.create({
     marginBottom: 100,
     justifyContent: 'center',
   },
-  inputContainer: {},
-  divider: {
-    height: 2,
-    width: '100%',
-    backgroundColor: '#D9D9D9',
-  },
+  contents: {alignItems: 'center', gap: 47},
+  form: {width: '100%'},
 });
 
 export default LoginScreen;
