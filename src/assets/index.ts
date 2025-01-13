@@ -1,0 +1,15 @@
+export {default as ArrowLeft} from './arrow_left.svg';
+export {default as ArrowRight} from './arrow_right.svg';
+export {default as Board} from './board.svg';
+export {default as Home} from './home.svg';
+export {default as Logo} from './logo.svg';
+export {default as WhiteLogo} from './logo_white.svg';
+export {default as Man1} from './man_01.svg';
+export {default as Man2} from './man_02.svg';
+export {default as Profile} from './profile.svg';
+export {default as Quest} from './quest.svg';
+export {default as Trophy} from './trophy.svg';
+export {default as Woman1} from './woman_01.svg';
+export {default as Woman3} from './woman_03.svg';
+export {default as Woman4} from './woman_04.svg';
+export {default as Woman5} from './woman_05.svg';
