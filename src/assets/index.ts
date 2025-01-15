@@ -1,6 +1,9 @@
 export {default as ArrowLeft} from './arrow_left.svg';
 export {default as ArrowRight} from './arrow_right.svg';
 export {default as Board} from './board.svg';
+export {default as CalendarLeft} from './calendar_arrow_left.svg';
+export {default as CalendarRight} from './calendar_arrow_right.svg';
+export {default as Dropdown} from './dropdown.svg';
 export {default as Home} from './home.svg';
 export {default as Logo} from './logo.svg';
 export {default as WhiteLogo} from './logo_white.svg';
