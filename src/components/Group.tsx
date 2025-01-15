@@ -13,8 +13,8 @@ interface GroupProps extends ViewProps {
 
 const Group = ({
   children,
-  justify = 'flex-start',
-  align = 'flex-start',
+  justify,
+  align,
   gap,
   width,
   height,
