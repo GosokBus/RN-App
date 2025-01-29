@@ -13,8 +13,8 @@ interface StackProps extends ViewProps {
 
 const Stack = ({
   children,
-  justify = 'flex-start',
-  align = 'flex-start',
+  justify,
+  align,
   gap,
   width,
   height,
