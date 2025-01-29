@@ -1,29 +1,48 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import {ProgressChart} from 'react-native-chart-kit';
-import ArrowRight from '../assets/arrow_right.svg';
-import Trophy from '../assets/trophy.svg';
-import Character from '../assets/woman_05.svg';
+import {StackNavigationProp} from '@react-navigation/stack';
+import moment from 'moment';
+import React, {useEffect} from 'react';
+import {Pressable, StyleSheet, View} from 'react-native';
+import {useSharedValue} from 'react-native-reanimated';
+import DonutChart from '../components/DonutChart';
 import Group from '../components/Group';
+import Icon from '../components/Icons';
 import Stack from '../components/Stack';
 import Typograph from '../components/Typograph';
 import {colors} from '../constants/Colors';
-const HomeScreens = () => {
+import {useExp} from '../hooks/useExp';
+import {HomeStackParamLists} from '../navigators/HomeStackNavigator';
+import useUserStore from '../store/useUserStore';
+
+type HomeScreenProps = {
+  navigation: StackNavigationProp<HomeStackParamLists, 'Main'>;
+};
+
+const HomeScreens = ({navigation}: HomeScreenProps) => {
+  const {userInfo: user} = useUserStore();
+  const {recentExpQuery} = useExp();
+  if (recentExpQuery.isLoading) {
+    console.log('로딩 중...');
+  }
+
+  if (recentExpQuery.isError) {
+    console.log('에러발생', recentExpQuery.error);
+  }
+
   return (
     <Stack gap={16} style={styles.container}>
       <Stack width={'100%'} style={styles.profileContainer}>
         <Group align="flex-end" justify="flex-start" style={{marginBottom: 22}}>
-          <Character width={120} height={120} />
+          <Icon name="Woman5" width={120} height={120} />
           <Stack align="flex-start" style={{marginLeft: 11, marginBottom: 10}}>
             <Group style={{marginBottom: 10}} align="flex-end" gap={10}>
               <Typograph size={32} weight={'bold'}>
-                홍길동
+                {user.userName}
               </Typograph>
               <Typograph
                 size={20}
                 weight={'bold'}
                 color={colors.PRIMARY_ORANGE}>
-                Lv.F1
+                Lv. {user.level}
               </Typograph>
             </Group>
             <Group gap={6} style={{marginBottom: 2}}>
@@ -31,14 +50,14 @@ const HomeScreens = () => {
                 사번
               </Typograph>
               <Typograph size={16} style={{fontSize: 16}}>
-                2023010101
+                {user.userId}
               </Typograph>
             </Group>
             <Group gap={6}>
               <Typograph size={16} weight={'bold'}>
                 소속
               </Typograph>
-              <Typograph size={16}>음성1센터</Typograph>
+              <Typograph size={16}>{user.part}</Typograph>
             </Group>
           </Stack>
         </Group>
@@ -46,41 +65,27 @@ const HomeScreens = () => {
         <Group style={{marginTop: 15, paddingLeft: 6}} gap={47}>
           <Typograph size={12}>최근 획득 뱃지</Typograph>
           <Group gap={8}>
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                backgroundColor: colors.PRIMARY_ORANGE,
-              }}
-            />
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                backgroundColor: colors.PRIMARY_ORANGE,
-              }}
-            />
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                backgroundColor: colors.PRIMARY_ORANGE,
-              }}
-            />
+            <Icon name="Badge_orange" />
+            <Icon name="Badge_purple" />
+            <Icon name="Badge_blue" />
           </Group>
         </Group>
         <View />
       </Stack>
-      <Stack gap={18} style={styles.expContainer}>
+      <Pressable
+        style={styles.expContainer}
+        onPress={() => {
+          navigation.navigate('ExpList');
+        }}>
         <Stack gap={15} width={'100%'}>
           <Group justify="space-between" align="center" width={'100%'}>
             <Group align="center" gap={8}>
-              <Trophy />
+              <Icon name="Trophy" />
               <Typograph size={16} weight={'bold'}>
                 총 누적 경험치
               </Typograph>
             </Group>
-            <ArrowRight />
+            <Icon name="ArrowRight" color={colors.PRIMARY_ORANGE} />
           </Group>
           <Group
             gap={17}
@@ -89,72 +94,111 @@ const HomeScreens = () => {
               styles.expContentBox,
               {paddingHorizontal: 22, paddingVertical: 32},
             ]}>
-            <ProgressChart
-              data={[0.8]}
-              width={100}
-              height={100}
-              radius={40}
-              strokeWidth={12}
-              chartConfig={{
-                backgroundColor: 'white', // 차트 배경 투명
-                backgroundGradientFrom: 'white',
-                backgroundGradientTo: 'white',
-                color: (opacity = 1) => `rgba(255,91,53,${opacity})`, // Progress Ring 색상
-              }}
-              hideLegend={true}
-            />
-            <Stack gap={11}>
-              <Group align="flex-end" gap={5}>
-                <Typograph size={32} weight={'bold'}>
-                  108,000
-                </Typograph>
-                <Typograph
-                  size={18}
-                  weight={'bold'}
-                  style={{
-                    lineHeight: 32,
-                  }}>
-                  점
-                </Typograph>
-              </Group>
-              <Typograph size={12} style={{marginLeft: 3}}>
-                다음 레벨까지는 {'\n'}
-                {
-                  <Typograph
-                    size={16}
-                    weight={'bold'}
-                    color={colors.PRIMARY_ORANGE}>
-                    5000
-                  </Typograph>
-                }{' '}
-                {
-                  <Typograph size={12} weight={'bold'}>
-                    P
-                  </Typograph>
-                }{' '}
-                더 필요해요!
-              </Typograph>
-            </Stack>
+            <ExpContents />
           </Group>
         </Stack>
         <Stack width={'100%'} gap={5}>
           <Typograph size={12} weight={'bold'}>
             경험치 획득
           </Typograph>
-          <Stack
-            style={[
-              styles.expContentBox,
-              {paddingVertical: 10, paddingHorizontal: 14},
-            ]}>
-            <Typograph size={8}>직무별 퀘스트</Typograph>
-            <Typograph size={12}>
-              최근 획득 경험치는{' '}
+
+          {recentExpQuery.isSuccess && recentExpQuery.data && (
+            <Stack
+              style={[
+                styles.expContentBox,
+                {paddingVertical: 10, paddingHorizontal: 14},
+              ]}>
+              <Typograph size={8}>{recentExpQuery.data[0]?.quest}</Typograph>
+              <Typograph size={12}>
+                최근 획득 경험치는{' '}
+                {
+                  <Typograph
+                    size={16}
+                    color={colors.PRIMARY_ORANGE}
+                    weight={'bold'}>
+                    {recentExpQuery.data[0]?.exp || '빈값'}
+                  </Typograph>
+                }{' '}
+                {
+                  <Typograph size={12} weight={'bold'}>
+                    DO
+                  </Typograph>
+                }{' '}
+                입니다!
+              </Typograph>
+              <Group justify="flex-end" width={'100%'}>
+                <Typograph size={8}>
+                  {moment(recentExpQuery.data?.createdAt).format('YYYY.MM.DD')}
+                </Typograph>
+              </Group>
+            </Stack>
+          )}
+        </Stack>
+      </Pressable>
+    </Stack>
+  );
+};
+
+export const ExpContents = () => {
+  const {detailExpQuery} = useExp();
+
+  const decimals = useSharedValue<number[]>([0]); // 초기값 설정
+
+  useEffect(() => {
+    if (detailExpQuery.data) {
+      decimals.value = [
+        detailExpQuery.data.experienceInBucket / detailExpQuery.data.bucketSize,
+      ];
+    }
+  }, [detailExpQuery.data, decimals]);
+
+  if (detailExpQuery.isLoading) {
+    return <Typograph size={12}>로딩 중...</Typograph>;
+  }
+
+  if (detailExpQuery.isError || !detailExpQuery.data) {
+    return (
+      <Typograph size={12}>데이터를 불러오는 중 오류가 발생했습니다.</Typograph>
+    );
+  }
+
+  return (
+    !detailExpQuery.isLoading &&
+    !detailExpQuery.isError && (
+      <>
+        <Group align="flex-end" gap={25}>
+          <DonutChart
+            n={1}
+            gap={0}
+            decimals={decimals}
+            colors={['#FF5B35']}
+            strokeWidth={15}
+            outerStrokeWidth={15}
+            radius={50}
+          />
+          <Stack gap={15}>
+            <Group align="flex-end" gap={5}>
+              <Typograph size={32} weight={'bold'}>
+                {detailExpQuery.data?.totalExp}
+              </Typograph>
+              <Typograph
+                size={18}
+                weight={'bold'}
+                style={{
+                  lineHeight: 35,
+                }}>
+                점
+              </Typograph>
+            </Group>
+
+            <Typograph size={12} style={{marginLeft: 3}}>
+              다음 레벨 {detailExpQuery.data?.nextLevelName}까지는 {'\n'}
               {
                 <Typograph
                   size={16}
-                  color={colors.PRIMARY_ORANGE}
-                  weight={'bold'}>
-                  3000
+                  weight={'bold'}
+                  color={colors.PRIMARY_ORANGE}>
+                  {detailExpQuery.data?.remainingExp}
                 </Typograph>
               }{' '}
               {
@@ -162,15 +206,12 @@ const HomeScreens = () => {
                   P
                 </Typograph>
               }{' '}
-              입니다!
+              더 필요해요!
             </Typograph>
-            <Group justify="flex-end" width={'100%'}>
-              <Typograph size={8}>2025.01.12</Typograph>
-            </Group>
           </Stack>
-        </Stack>
-      </Stack>
-    </Stack>
+        </Group>
+      </>
+    )
   );
 };
 
@@ -180,6 +221,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.WHITE,
     paddingHorizontal: 18,
     paddingVertical: 20,
+  },
+  donutContainer: {
+    width: 80, // 2 * radius
+    height: 80, // 2 * radius
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileContainer: {
     borderRadius: 10,
@@ -193,6 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#49454f66',
   },
   expContainer: {
+    gap: 18,
     backgroundColor: colors.SECONDARY_ORANGE,
     padding: 22,
     borderRadius: 10,
