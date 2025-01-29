@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "407572952642",
+    "project_id": "gosock-bus",
+    "storage_bucket": "gosock-bus.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407572952642:android:292e74ca0ea79d24c29fdb",
+        "android_client_info": {
+          "package_name": "com.gosockbus.dohands"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "407572952642-4udehtod5dttqt3drqkjmkfe3c2lseqd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCijr1FTu2c0H7aR36itPN_VTFimLV712U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "407572952642-4udehtod5dttqt3drqkjmkfe3c2lseqd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
