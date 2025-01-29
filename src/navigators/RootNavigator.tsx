@@ -5,10 +5,12 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import WhiteLogo from '../assets/logo_white.svg';
 import Icon from '../components/Icons';
 import {colors} from '../constants/Colors';
-import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import {useAuth} from '../hooks/useAuth';
+import LoginScreen from '../screens/LoginScreen';
 import QuestScreen from '../screens/QuestScreen';
 import BoardStackNavigator from './BoardStackNavigator';
+import HomeStackNavigator from './HomeStackNavigator';
+import ProfileStackNavigator from './ProfileStackNavigator';
 
 type RootBottomTabParamList = {
   Home: undefined;
@@ -18,23 +20,13 @@ type RootBottomTabParamList = {
 };
 
 const RootNavigator = () => {
+  const {isLoggedIn} = useAuth();
   const RootTabs = createBottomTabNavigator<RootBottomTabParamList>();
   const inset = useSafeAreaInsets();
-  return (
+  return isLoggedIn ? (
     <RootTabs.Navigator
       screenOptions={{
-        header: () => (
-          <View
-            style={{
-              marginTop: inset.top,
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: 58,
-              backgroundColor: colors.PRIMARY_ORANGE,
-            }}>
-            <WhiteLogo />
-          </View>
-        ),
+        headerShown: false,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: 'bold',
@@ -53,7 +45,7 @@ const RootNavigator = () => {
       }}>
       <RootTabs.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStackNavigator}
         options={{
           tabBarIcon: ({focused}) => (
             <Icon name="Home" tabFocused={focused} color="#49454F" />
@@ -69,6 +61,19 @@ const RootNavigator = () => {
             <Icon name="Quest" tabFocused={focused} color="#49454F" />
           ),
           title: '퀘스트',
+          headerShown: true,
+          header: () => (
+            <View
+              style={{
+                marginTop: inset.top,
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: 58,
+                backgroundColor: colors.PRIMARY_ORANGE,
+              }}>
+              <WhiteLogo />
+            </View>
+          ),
         }}
       />
       <RootTabs.Screen
@@ -79,12 +84,11 @@ const RootNavigator = () => {
             <Icon name="Board" tabFocused={focused} color="#49454F" />
           ),
           title: '게시판',
-          headerShown: false,
         }}
       />
       <RootTabs.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStackNavigator}
         options={{
           tabBarIcon: ({focused}) => (
             <Icon name="Profile" tabFocused={focused} color="#49454F" />
@@ -93,6 +97,8 @@ const RootNavigator = () => {
         }}
       />
     </RootTabs.Navigator>
+  ) : (
+    <LoginScreen />
   );
 };
 
