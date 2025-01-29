@@ -2,8 +2,8 @@ import moment from 'moment';
 import {colors} from './../../../Dohands/src/constants/Colors';
 
 interface WeekAcheive {
-  type: 'week' | 'month';
-  acheive: 'MID' | 'MAX';
+  type: 'Week' | 'Month' | undefined;
+  acheive: 'Median' | 'Max';
   weekNum: number;
 }
 function GetISOWeek({type, weekNum, acheive}: WeekAcheive) {
@@ -29,7 +29,8 @@ function GetISOWeek({type, weekNum, acheive}: WeekAcheive) {
       color: colors[acheive],
     };
   }
-  return weekData;
+
+  return type === undefined ? {} : weekData;
 }
 const useCalendar = () => {
   return GetISOWeek;

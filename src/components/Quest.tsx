@@ -3,6 +3,8 @@ import {Pressable, View} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 import {colors} from '../constants/Colors';
 import useCalendar from '../hooks/useCalendar';
+import {useLeaderQuest} from '../hooks/useQuest';
+import {LeaderQuestDetail} from '../utils/types';
 import Group from './Group';
 import Icon from './Icons';
 import Stack from './Stack';
@@ -10,13 +12,18 @@ import Typograph from './Typograph';
 
 interface QuestProps {
   title: string;
-  max: string;
-  mid: string;
+  max: number;
+  mid: number;
   isLast?: boolean;
-  type: 'week' | 'month';
 }
 
-const MonthItem = ({month}: {month: string}) => {
+const MonthItem = ({
+  month,
+  history,
+}: {
+  month: string;
+  history?: LeaderQuestDetail;
+}) => {
   return (
     <View
       style={{
@@ -24,41 +31,39 @@ const MonthItem = ({month}: {month: string}) => {
         height: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: colors.MAX,
+        backgroundColor: history
+          ? colors[history.achievement === 'Max']
+          : '#FFF7F5',
       }}>
-      <Typograph size={20} color={'#49454F'}>
-        {month}
+      <Typograph size={18} color={'#49454F'}>
+        {month}월
       </Typograph>
     </View>
   );
 };
 
-const monthes = [
-  '1월',
-  '2월',
-  '3월',
-  '4월',
-  '5월',
-  '6월',
-  '7월',
-  '8월',
-  '9월',
-  '10월',
-  '11월',
-  '12월',
-];
+const monthes = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 interface CustomCalendarProps {
-  type: 'week' | 'month';
+  type: 'Week' | 'Month' | undefined;
+
+  questHistory: LeaderQuestDetail[];
 }
-const CustomCalendar = ({type}: CustomCalendarProps) => {
+const CustomCalendar = ({type, questHistory}: CustomCalendarProps) => {
+  if (type === undefined)
+    return <Typograph size={15}>진행 정보가 없습니다.</Typograph>;
+  console.log(questHistory);
   const [tmpDate, setTmpDate] = useState(new Date());
   const GetISOWeek = useCalendar();
-  const markedDates = {
-    ...GetISOWeek({type: type, weekNum: 2, acheive: 'MAX'}),
-    ...GetISOWeek({type: type, weekNum: 1, acheive: 'MID'}),
-  };
 
-  return type === 'week' ? (
+  const markedDates = questHistory.reduce((acc, item) => {
+    const weekDates = GetISOWeek({
+      type: item.monthOrWeek,
+      weekNum: parseInt(item.timeValue),
+      acheive: item.achievement,
+    });
+    return {...acc, ...weekDates};
+  }, {});
+  return type === 'Week' ? (
     <View style={{paddingVertical: 10}}>
       <Calendar
         key={tmpDate.toISOString()}
@@ -142,7 +147,7 @@ const CustomCalendar = ({type}: CustomCalendarProps) => {
               style={{
                 width: 12,
                 height: 12,
-                backgroundColor: colors.MID,
+                backgroundColor: colors.Mid,
               }}
             />
             <Typograph size={8}>MID</Typograph>
@@ -152,7 +157,7 @@ const CustomCalendar = ({type}: CustomCalendarProps) => {
               style={{
                 width: 12,
                 height: 12,
-                backgroundColor: colors.MAX,
+                backgroundColor: colors.Max,
               }}
             />
             <Typograph size={8}>MAX</Typograph>
@@ -191,9 +196,19 @@ const CustomCalendar = ({type}: CustomCalendarProps) => {
         <Group justify="flex-start" width={'100%'} gap={15}>
           <Typograph size={8}>2024년</Typograph>
           <Group style={{flexWrap: 'wrap'}} gap={15} width={210}>
-            {monthes.map(item => (
-              <MonthItem month={item} key={item} />
-            ))}
+            {monthes.map(month => {
+              const matchingHistory = questHistory.find(
+                item => item.timeValue === month,
+              ); // timeValue와 month가 같은 questHistory 찾기
+
+              return (
+                <MonthItem
+                  key={month}
+                  month={month}
+                  history={matchingHistory} // 일치하는 history를 넘겨줌
+                />
+              );
+            })}
           </Group>
         </Group>
         <Group>
@@ -203,7 +218,7 @@ const CustomCalendar = ({type}: CustomCalendarProps) => {
                 style={{
                   width: 12,
                   height: 12,
-                  backgroundColor: colors.MID,
+                  backgroundColor: colors.Mid,
                 }}
               />
               <Typograph size={8}>MID</Typograph>
@@ -213,7 +228,7 @@ const CustomCalendar = ({type}: CustomCalendarProps) => {
                 style={{
                   width: 12,
                   height: 12,
-                  backgroundColor: colors.MAX,
+                  backgroundColor: colors.Max,
                 }}
               />
               <Typograph size={8}>MAX</Typograph>
@@ -225,17 +240,18 @@ const CustomCalendar = ({type}: CustomCalendarProps) => {
   );
 };
 
-const Quest = ({title, max, mid, isLast = false, type}: QuestProps) => {
+const Quest = ({title, max, mid, isLast = false}: QuestProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
-
-  const handleQuestPress = () => {
-    setCalendarOpen(prev => !prev);
-  };
+  const leaderQuestQuery = useLeaderQuest(title);
+  const leaderQuestData = leaderQuestQuery.data;
+  console.log(leaderQuestData);
   return (
     <Stack style={{paddingHorizontal: 14}}>
       <Pressable
         style={{paddingVertical: 16, gap: 5}}
-        onPress={handleQuestPress}>
+        onPress={() => {
+          setCalendarOpen(prev => !prev);
+        }}>
         <Group align="flex-end" justify="space-between" width={'100%'}>
           <Typograph size={16} weight={'bold'} color={'#49454F'}>
             {title}
@@ -249,7 +265,12 @@ const Quest = ({title, max, mid, isLast = false, type}: QuestProps) => {
           MAX 기준 {max}, MID 기준 {mid}
         </Typograph>
       </Pressable>
-      {calendarOpen && <CustomCalendar type={type} />}
+      {calendarOpen && leaderQuestData && (
+        <CustomCalendar
+          type={leaderQuestData[0] && leaderQuestData[0].monthOrWeek}
+          questHistory={leaderQuestData}
+        />
+      )}
       {!isLast && (
         <View
           style={{

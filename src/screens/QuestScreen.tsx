@@ -5,8 +5,12 @@ import Quest from '../components/Quest';
 import Stack from '../components/Stack';
 import Typograph from '../components/Typograph';
 import {colors} from '../constants/Colors';
+import {useQuest} from '../hooks/useQuest';
 
 const QuestScreen = () => {
+  const questListQuery = useQuest();
+  const questListData = questListQuery.data;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Stack gap={28}>
@@ -16,16 +20,15 @@ const QuestScreen = () => {
               직무별 퀘스트
             </Typograph>
             <Typograph size={12} color={'#49454F'}>
-              음성1센터
+              {questListData?.department}
             </Typograph>
           </Group>
           <View style={styles.questContainer}>
             <Quest
-              title="매주 업무 개선하기"
-              max="80점"
-              mid="40점"
+              title={questListData?.partQuests[0].questName}
+              max={questListData?.partQuests[0].maxScore}
+              mid={questListData?.partQuests[0].midScore}
               isLast={true}
-              type="week"
             />
           </View>
         </Stack>
@@ -34,25 +37,14 @@ const QuestScreen = () => {
             리더부여 퀘스트
           </Typograph>
           <View style={styles.questContainer}>
-            <Quest
-              title="매주 업무 개선하기"
-              max="80점"
-              mid="40점"
-              type="month"
-            />
-            <Quest
-              title="매주 업무 개선하기"
-              max="80점"
-              mid="40점"
-              type="week"
-            />
-            <Quest
-              title="매주 업무 개선하기"
-              max="80점"
-              mid="40점"
-              type="week"
-              isLast={true}
-            />
+            {questListData?.leaderQuests.map((item, idx) => (
+              <Quest
+                title={item.questName}
+                max={item.maxScore}
+                mid={item.midScore}
+                key={`${item.questName}-${idx}`}
+              />
+            ))}
           </View>
         </Stack>
       </Stack>
